@@ -260,35 +260,7 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
             </div>
           </form>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem', margin: '1.75rem 0' }}>
-            <div style={{ flex: 1, height: '1px', background: 'var(--c-divider)' }} />
-            <span style={{ fontSize: '0.75rem', color: 'var(--c-text-3)', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', transition: 'color 350ms ease' }}>ou</span>
-            <div style={{ flex: 1, height: '1px', background: 'var(--c-divider)' }} />
-          </div>
-
-          <button
-            type="button"
-            disabled={loadingGoogle}
-            onClick={handleGoogle}
-            style={{
-              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              gap: '0.75rem', padding: '0.75rem 1.25rem',
-              background: 'var(--c-btn-secondary-bg)', backdropFilter: 'blur(16px)',
-              border: '1px solid var(--c-btn-secondary-border)', borderRadius: '0.875rem',
-              color: 'var(--c-btn-secondary-text)', fontSize: '0.9375rem', fontWeight: 600,
-              fontFamily: 'inherit', cursor: loadingGoogle ? 'not-allowed' : 'pointer',
-              opacity: loadingGoogle ? 0.6 : 1,
-              transition: 'transform 150ms ease, box-shadow 150ms ease, opacity 150ms ease, background 350ms ease',
-              boxShadow: 'var(--c-shadow-sm)', outline: 'none', marginBottom: '1.5rem',
-            }}
-            onMouseEnter={e => { if (!loadingGoogle) { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 24px rgba(0,0,0,0.22)' } }}
-            onMouseLeave={e => { if (!loadingGoogle) { (e.currentTarget as HTMLButtonElement).style.transform = ''; (e.currentTarget as HTMLButtonElement).style.boxShadow = 'var(--c-shadow-sm)' } }}
-          >
-            {loadingGoogle ? (
-              <span style={{ width: '1.125rem', height: '1.125rem', border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.7s linear infinite' }} />
-            ) : <GoogleIcon />}
-            {loadingGoogle ? 'Conectando…' : 'Continuar com Google'}
-          </button>
+          <div style={{ margin: '1.75rem 0 0' }} />
 
           <p style={{ textAlign: 'center', fontSize: '0.9375rem', color: 'var(--c-text-2)', transition: 'color 350ms ease' }}>
             Não tem uma conta?{' '}
