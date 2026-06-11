@@ -121,6 +121,103 @@ function maskCep(value: string) {
   return d.length > 5 ? `${d.slice(0, 5)}-${d.slice(5)}` : d
 }
 
+/* ─── Modal de sucesso ───────────────────────────────────────────────────── */
+const SuccessModal = ({ onClose }: { onClose: () => void }) => (
+  <div
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="success-title"
+    style={{
+      position: 'fixed', inset: 0, zIndex: 9000,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '1rem',
+      background: 'rgba(4,4,15,0.72)',
+      backdropFilter: 'blur(6px)',
+      WebkitBackdropFilter: 'blur(6px)',
+      animation: 'modal-fade-in 220ms ease',
+    }}
+    onClick={e => { if (e.target === e.currentTarget) onClose() }}
+  >
+    <div style={{
+      width: '100%', maxWidth: '400px',
+      background: 'var(--c-glass-bg-lg)',
+      backdropFilter: 'blur(24px) saturate(1.8)',
+      WebkitBackdropFilter: 'blur(24px) saturate(1.8)',
+      border: 'var(--c-border-lg)',
+      borderRadius: 'var(--radius-2xl)',
+      boxShadow: 'var(--c-shadow-lg)',
+      padding: '2.25rem 2rem 2rem',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0',
+      animation: 'modal-scale-in 280ms cubic-bezier(0.34,1.56,0.64,1)',
+      textAlign: 'center',
+    }}>
+      {/* ícone */}
+      <div style={{
+        width: '3.5rem', height: '3.5rem', borderRadius: '50%', marginBottom: '1.25rem',
+        background: 'linear-gradient(135deg,rgba(34,197,94,0.22),rgba(34,197,94,0.10))',
+        border: '1px solid rgba(34,197,94,0.40)',
+        boxShadow: '0 0 24px rgba(34,197,94,0.25)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      </div>
+
+      <h2 id="success-title" style={{
+        fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.03em',
+        color: 'var(--c-text-1)', marginBottom: '0.5rem',
+        transition: 'color 350ms ease',
+      }}>
+        Conta criada com sucesso!
+      </h2>
+
+      <p style={{
+        fontSize: '0.9375rem', color: 'var(--c-text-2)', lineHeight: 1.6,
+        marginBottom: '1.75rem', transition: 'color 350ms ease',
+      }}>
+        Verifique seu e-mail e clique no link de confirmação para ativar sua conta.
+      </p>
+
+      <button
+        onClick={onClose}
+        style={{
+          width: '100%', padding: '0.75rem 1.5rem',
+          background: 'linear-gradient(135deg,#1a7aff,#0062e6)',
+          border: 'none', borderRadius: 'var(--radius-lg)',
+          color: '#fff', fontSize: '0.9375rem', fontWeight: 700,
+          fontFamily: 'inherit', cursor: 'pointer',
+          boxShadow: '0 4px 18px rgba(26,122,255,0.38)',
+          transition: 'opacity 150ms ease, transform 150ms ease',
+        }}
+        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.88' }}
+        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '1' }}
+      >
+        Ir para o login
+      </button>
+    </div>
+
+    <style>{`
+      @keyframes modal-fade-in  { from { opacity:0 } to { opacity:1 } }
+      @keyframes modal-scale-in { from { opacity:0; transform:scale(0.88) } to { opacity:1; transform:scale(1) } }
+    `}</style>
+  </div>
+)
+
+/* ─── Spinner inline ─────────────────────────────────────────────────────── */
+const CepSpinner = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+    style={{ animation: 'spin 0.7s linear infinite', display: 'block' }}>
+    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+  </svg>
+)
+
+const CepCheck = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5">
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+)
+
 /* ─── SignUpPage ─────────────────────────────────────────────────────────── */
 export default function SignUpPage({ onNavigate }: SignUpPageProps) {
   const [nome,           setNome]           = useState('')
@@ -134,9 +231,46 @@ export default function SignUpPage({ onNavigate }: SignUpPageProps) {
   const [confirma,       setConfirma]       = useState('')
   const [showSenha,      setShowSenha]      = useState(false)
   const [showConfirma,   setShowConfirma]   = useState(false)
-  const [loading,        setLoading]        = useState(false)
-  const [errors,         setErrors]         = useState<Record<string, string>>({})
-  const [generalError,   setGeneralError]   = useState('')
+  const [loading,           setLoading]           = useState(false)
+  const [cepLoading,        setCepLoading]        = useState(false)
+  const [cepFound,          setCepFound]          = useState(false)
+  const [showSuccessModal,  setShowSuccessModal]  = useState(false)
+  const [errors,            setErrors]            = useState<Record<string, string>>({})
+  const [generalError,      setGeneralError]      = useState('')
+
+  const fetchCep = async (digits: string) => {
+    setCepLoading(true)
+    setCepFound(false)
+    try {
+      const res  = await fetch(`https://viacep.com.br/ws/${digits}/json/`)
+      const data = await res.json()
+      if (data.erro) {
+        setErrors(p => ({ ...p, cep: 'CEP não encontrado' }))
+      } else {
+        const partes = [
+          data.logradouro,
+          data.bairro,
+          data.localidade && data.uf ? `${data.localidade}/${data.uf}` : '',
+        ].filter(Boolean)
+        setEndereco(partes.join(', '))
+        setErrors(p => ({ ...p, cep: '', endereco: '' }))
+        setCepFound(true)
+      }
+    } catch {
+      setErrors(p => ({ ...p, cep: 'Erro ao buscar CEP' }))
+    } finally {
+      setCepLoading(false)
+    }
+  }
+
+  const handleCepChange = (raw: string) => {
+    const masked  = maskCep(raw)
+    const digits  = masked.replace(/\D/g, '')
+    setCep(masked)
+    setCepFound(false)
+    setErrors(p => ({ ...p, cep: '' }))
+    if (digits.length === 8) fetchCep(digits)
+  }
 
   const validate = () => {
     const e: Record<string, string> = {}
@@ -161,6 +295,7 @@ export default function SignUpPage({ onNavigate }: SignUpPageProps) {
       email:    email.trim(),
       password: senha,
       options: {
+        emailRedirectTo: window.location.origin,
         data: {
           full_name: nome.trim(),
           name:      nomeSocial.trim() || nome.trim(),
@@ -190,15 +325,16 @@ export default function SignUpPage({ onNavigate }: SignUpPageProps) {
     // onAuthStateChange will navigate to myarea if session is set
     // Otherwise show success and redirect to login
     if (!data.session) {
-      // Email confirmation required
       setGeneralError('')
-      alert('Conta criada! Verifique seu e-mail para confirmar o cadastro.')
-      onNavigate('login')
+      setShowSuccessModal(true)
     }
   }
 
   return (
     <>
+      {showSuccessModal && (
+        <SuccessModal onClose={() => { setShowSuccessModal(false); onNavigate('login') }} />
+      )}
       <Grain />
       <ThemeToggle />
 
@@ -275,11 +411,17 @@ export default function SignUpPage({ onNavigate }: SignUpPageProps) {
                     label="CEP"
                     placeholder="00000-000"
                     value={cep}
-                    onChange={e => { setCep(maskCep(e.target.value)); setErrors(p => ({ ...p, cep: '' })) }}
+                    onChange={e => handleCepChange(e.target.value)}
                     error={errors.cep}
                     inputMode="numeric"
                     maxLength={9}
                     leadingIcon={<MapPinIcon />}
+                    trailingIcon={
+                      cepLoading ? <CepSpinner /> :
+                      cepFound   ? <CepCheck />   :
+                      undefined
+                    }
+                    disabled={cepLoading}
                   />
                 </div>
                 <div style={{ flex: 1 }}>
@@ -290,6 +432,7 @@ export default function SignUpPage({ onNavigate }: SignUpPageProps) {
                     onChange={e => { setEndereco(e.target.value); setErrors(p => ({ ...p, endereco: '' })) }}
                     error={errors.endereco}
                     autoComplete="street-address"
+                    disabled={cepLoading}
                   />
                 </div>
               </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { User } from '@supabase/supabase-js'
 import './design-system/global.css'
 import './design-system/responsive.css'
@@ -9,11 +9,12 @@ import MyAreaPage         from './pages/MyAreaPage'
 import CreateCompanyPage  from './pages/CreateCompanyPage'
 import MyCompaniesPage    from './pages/MyCompaniesPage'
 import CompanyProfilePage from './pages/CompanyProfilePage'
+import AuthCallbackPage   from './pages/AuthCallbackPage'
 
 export type Page =
   | 'login' | 'signup' | 'myarea'
   | 'create-company' | 'edit-company' | 'my-companies'
-  | 'company-profile'
+  | 'company-profile' | 'auth-callback'
 
 /* ─── Loading spinner ────────────────────────────────────────────────────── */
 function Loader() {
@@ -40,23 +41,32 @@ export default function App() {
   const [user,            setUser]            = useState<User | null>(null)
   const [activeCompanyId, setActiveCompanyId] = useState<string | null>(null)
   const [initializing,    setInitializing]    = useState(true)
+  const isAuthCallback    = useRef(false)
 
   useEffect(() => {
-    // Restore session on mount
+    // Detect auth callback hash params (email confirmation redirect)
+    const hash = window.location.hash
+    if (hash && (hash.includes('access_token') || hash.includes('type=signup') || hash.includes('error='))) {
+      isAuthCallback.current = true
+      setPage('auth-callback')
+      window.history.replaceState(null, '', window.location.pathname)
+    }
+
     supabase.auth.getSession().then(({ data }) => {
       const u = data.session?.user ?? null
       setUser(u)
-      if (u) setPage('myarea')
+      if (u && !isAuthCallback.current) setPage('myarea')
       setInitializing(false)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       const u = session?.user ?? null
       setUser(u)
-      if (u && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+      if (!isAuthCallback.current && u && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
         setPage('myarea')
       }
       if (event === 'SIGNED_OUT') {
+        isAuthCallback.current = false
         setPage('login')
         setActiveCompanyId(null)
       }
@@ -80,8 +90,14 @@ export default function App() {
   if (initializing) return <Loader />
 
   // Páginas públicas — acessíveis sem sessão
-  if (page === 'signup') return <SignUpPage onNavigate={navigate} />
-  if (!user)             return <LoginPage  onNavigate={navigate} />
+  if (page === 'signup')        return <SignUpPage onNavigate={navigate} />
+  if (page === 'auth-callback') return (
+    <AuthCallbackPage
+      user={user}
+      onNavigate={p => { isAuthCallback.current = false; navigate(p) }}
+    />
+  )
+  if (!user) return <LoginPage onNavigate={navigate} />
 
   if (page === 'myarea') return (
     <MyAreaPage user={user} onNavigate={navigate} onViewCompany={viewCompany} />
