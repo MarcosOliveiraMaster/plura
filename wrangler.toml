@@ -1,0 +1,4 @@
+name = "pluraapp"
+pages_build_output_dir = "desing/glass-design-system/dist"
+
+[env.production]
