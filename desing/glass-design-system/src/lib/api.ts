@@ -17,6 +17,9 @@ export async function updateProfile(userId: string, updates: {
   name?: string
   accessibility_needs?: A11yNeed[]
   avatar_url?: string
+  cep?: string | null
+  address?: string | null
+  complement?: string | null
 }) {
   const { error } = await supabase.from('profiles').update(updates).eq('id', userId)
   if (error) throw error

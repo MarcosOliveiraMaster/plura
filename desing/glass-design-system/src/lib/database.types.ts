@@ -250,6 +250,9 @@ export type Database = {
             | Database["public"]["Enums"]["user_accessibility_need"][]
             | null
           avatar_url: string | null
+          cep: string | null
+          address: string | null
+          complement: string | null
           created_at: string | null
           email: string
           id: string
@@ -261,6 +264,9 @@ export type Database = {
             | Database["public"]["Enums"]["user_accessibility_need"][]
             | null
           avatar_url?: string | null
+          cep?: string | null
+          address?: string | null
+          complement?: string | null
           created_at?: string | null
           email: string
           id: string
@@ -272,6 +278,9 @@ export type Database = {
             | Database["public"]["Enums"]["user_accessibility_need"][]
             | null
           avatar_url?: string | null
+          cep?: string | null
+          address?: string | null
+          complement?: string | null
           created_at?: string | null
           email?: string
           id?: string
