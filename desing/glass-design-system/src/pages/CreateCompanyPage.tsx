@@ -90,6 +90,17 @@ const AccessibilityChips = ({ selected, onChange }: { selected: A11yFeature[]; o
 )
 
 /* ─── Icons ─────────────────────────────────────────────────────────────── */
+const CepSpinner = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+    style={{ animation: 'spin 0.7s linear infinite', display: 'block' }}>
+    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+  </svg>
+)
+const CepCheck = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5">
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+)
 const ArrowLeftIcon = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
 const BuildingIcon  = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
 const MapPinIcon    = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -134,10 +145,44 @@ export default function CreateCompanyPage({ user, companyId, onNavigate, onSaved
   const [website,       setWebsite]       = useState('')
   const [loading,       setLoading]       = useState(false)
   const [loadingData,   setLoadingData]   = useState(isEdit)
+  const [cepLoading,    setCepLoading]    = useState(false)
+  const [cepFound,      setCepFound]      = useState(false)
   const [errors,        setErrors]        = useState<Record<string, string>>({})
   const [generalError,  setGeneralError]  = useState('')
 
   const photoRef = useRef<HTMLInputElement>(null)
+
+  const fetchCep = async (digits: string) => {
+    setCepLoading(true)
+    setCepFound(false)
+    try {
+      const res  = await fetch(`https://viacep.com.br/ws/${digits}/json/`)
+      const data = await res.json()
+      if (data.erro) {
+        setErrors(p => ({ ...p, cep: 'CEP não encontrado' }))
+      } else {
+        const logradouro = [data.logradouro, data.bairro].filter(Boolean).join(', ')
+        setAddress(logradouro)
+        setCity(data.localidade ?? '')
+        setState(data.uf ?? '')
+        setErrors(p => ({ ...p, cep: '', address: '' }))
+        setCepFound(true)
+      }
+    } catch {
+      setErrors(p => ({ ...p, cep: 'Erro ao buscar CEP' }))
+    } finally {
+      setCepLoading(false)
+    }
+  }
+
+  const handleCepChange = (raw: string) => {
+    const masked = maskCep(raw)
+    const digits = masked.replace(/\D/g, '')
+    setCep(masked)
+    setCepFound(false)
+    setErrors(p => ({ ...p, cep: '' }))
+    if (digits.length === 8) fetchCep(digits)
+  }
 
   // Load existing company data when editing
   useEffect(() => {
@@ -306,18 +351,54 @@ export default function CreateCompanyPage({ user, companyId, onNavigate, onSaved
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div className="r-addr-row" style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
                   <div className="r-cep-field" style={{ width: '140px', flexShrink: 0 }}>
-                    <Input label="CEP" placeholder="00000-000" value={cep} onChange={e => setCep(maskCep(e.target.value))} inputMode="numeric" maxLength={9} leadingIcon={<MapPinIcon />} />
+                    <Input
+                      label="CEP"
+                      placeholder="00000-000"
+                      value={cep}
+                      onChange={e => handleCepChange(e.target.value)}
+                      error={errors.cep}
+                      inputMode="numeric"
+                      maxLength={9}
+                      leadingIcon={<MapPinIcon />}
+                      trailingIcon={
+                        cepLoading ? <CepSpinner /> :
+                        cepFound   ? <CepCheck />   :
+                        undefined
+                      }
+                      disabled={cepLoading}
+                    />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <Input label="Endereço" placeholder="Rua, número" value={address} onChange={e => { setAddress(e.target.value); setErrors(p => ({...p, address: ''})) }} error={errors.address} autoComplete="street-address" />
+                    <Input
+                      label="Endereço"
+                      placeholder="Rua, número"
+                      value={address}
+                      onChange={e => { setAddress(e.target.value); setErrors(p => ({...p, address: ''})) }}
+                      error={errors.address}
+                      autoComplete="street-address"
+                      disabled={cepLoading}
+                    />
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
                   <div style={{ flex: 1 }}>
-                    <Input label="Cidade" placeholder="São Paulo" value={city} onChange={e => setCity(e.target.value)} />
+                    <Input
+                      label="Cidade"
+                      placeholder="São Paulo"
+                      value={city}
+                      onChange={e => setCity(e.target.value)}
+                      disabled={cepLoading}
+                    />
                   </div>
                   <div style={{ width: '80px', flexShrink: 0 }}>
-                    <Input label="UF" placeholder="SP" value={state} onChange={e => setState(e.target.value.toUpperCase().slice(0, 2))} maxLength={2} />
+                    <Input
+                      label="UF"
+                      placeholder="SP"
+                      value={state}
+                      onChange={e => setState(e.target.value.toUpperCase().slice(0, 2))}
+                      maxLength={2}
+                      disabled={cepLoading}
+                    />
                   </div>
                 </div>
                 <Input label="Complemento" placeholder="Bairro, referência… (opcional)" value={complement} onChange={e => setComplement(e.target.value)} />
