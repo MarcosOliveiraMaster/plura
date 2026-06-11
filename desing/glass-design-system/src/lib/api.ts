@@ -189,8 +189,8 @@ export async function removeCollaborator(collaboratorId: string) {
 }
 
 export async function respondToInvite(collaboratorId: string, accept: boolean) {
-  const status = accept ? 'accepted' : 'declined'
-  const updates: { status: string; user_id?: string } = { status }
+  const status = (accept ? 'accepted' : 'declined') as 'accepted' | 'declined'
+  const updates: { status: 'pending' | 'accepted' | 'declined'; user_id?: string } = { status }
 
   if (accept) {
     const { data: { user } } = await supabase.auth.getUser()
