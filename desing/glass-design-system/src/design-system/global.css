@@ -1,0 +1,302 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TEMA ESCURO (padrão)
+═══════════════════════════════════════════════════════════════════════════ */
+:root {
+  /* ─── Paleta fixa ─── */
+  --blue-300: #6aadff;
+  --blue-400: #3d94ff;
+  --blue-500: #1a7aff;
+  --blue-600: #0062e6;
+  --blue-700: #004bbf;
+
+  /* ─── Texto ─── */
+  --c-text-1:    #ffffff;
+  --c-text-2:    rgba(255, 255, 255, 0.50);
+  --c-text-3:    rgba(255, 255, 255, 0.28);
+  --c-text-4:    rgba(255, 255, 255, 0.14);
+  --c-text-mono: rgba(255, 255, 255, 0.32);
+  --c-text-blue: rgba(26, 122, 255, 0.68);
+
+  /* ─── Fundo ─── */
+  --c-bg: #04040f;
+
+  /* ─── Superfícies glass ─── */
+  --c-glass-bg:      rgba(255, 255, 255, 0.10);
+  --c-glass-bg-sm:   rgba(255, 255, 255, 0.05);
+  --c-glass-bg-lg:   rgba(255, 255, 255, 0.16);
+  --c-glass-bg-blue: rgba(26, 122, 255, 0.13);
+
+  /* ─── Bordas ─── */
+  --c-border:      1px solid rgba(255, 255, 255, 0.14);
+  --c-border-sm:   1px solid rgba(255, 255, 255, 0.08);
+  --c-border-lg:   1px solid rgba(255, 255, 255, 0.26);
+  --c-border-blue: 1px solid rgba(26, 122, 255, 0.35);
+
+  /* ─── Sombras ─── */
+  --c-shadow-sm:  0 2px 8px rgba(0,0,0,.22),  inset 0 1px 0 rgba(255,255,255,.08);
+  --c-shadow-md:  0 8px 24px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.10);
+  --c-shadow-lg:  0 16px 48px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.13);
+  --c-shadow-glow:0 0 28px rgba(26,122,255,.30), 0 8px 24px rgba(0,0,0,.30);
+
+  /* ─── Estrutural ─── */
+  --c-divider:         rgba(255, 255, 255, 0.07);
+  --c-dot-grid:        rgba(255, 255, 255, 0.055);
+  --c-terminal-bg:     rgba(0, 0, 0, 0.55);
+  --c-terminal-border: rgba(255, 255, 255, 0.07);
+
+  /* ─── Inputs ─── */
+  --c-input-bg:           rgba(255, 255, 255, 0.07);
+  --c-input-text:         #ffffff;
+  --c-input-border:       rgba(255, 255, 255, 0.15);
+  --c-input-label:        rgba(255, 255, 255, 0.75);
+  --c-input-helper:       rgba(255, 255, 255, 0.45);
+  --c-input-icon:         rgba(255, 255, 255, 0.38);
+  --c-input-icon-focus:   #6aadff;
+  --c-input-focus-border: rgba(26, 122, 255, 0.70);
+  --c-input-focus-ring:   rgba(26, 122, 255, 0.20);
+  --c-input-error-border: rgba(239, 68, 68, 0.60);
+  --c-input-error-ring:   rgba(239, 68, 68, 0.15);
+  --c-input-error-text:   rgba(239, 68, 68, 0.85);
+  --c-input-error-label:  rgba(239, 68, 68, 0.90);
+  --c-placeholder:        rgba(255, 255, 255, 0.22);
+
+  /* ─── Botão secondary / ghost ─── */
+  --c-btn-secondary-bg:     rgba(255, 255, 255, 0.12);
+  --c-btn-secondary-border: rgba(255, 255, 255, 0.20);
+  --c-btn-secondary-text:   #ffffff;
+  --c-btn-ghost-text:       rgba(255, 255, 255, 0.75);
+  --c-btn-ghost-border:     rgba(255, 255, 255, 0.12);
+
+  /* ─── Badge ─── */
+  --c-badge-white-bg:      rgba(255, 255, 255, 0.10);
+  --c-badge-white-border:  rgba(255, 255, 255, 0.20);
+  --c-badge-white-text:    rgba(255, 255, 255, 0.85);
+  --c-badge-outline-text:  rgba(255, 255, 255, 0.70);
+  --c-badge-outline-border:rgba(255, 255, 255, 0.25);
+  --c-badge-dot-white:     rgba(255, 255, 255, 0.80);
+  --c-badge-dot-outline:   rgba(255, 255, 255, 0.60);
+
+  /* ─── Avatar ─── */
+  --c-avatar-border:     rgba(255, 255, 255, 0.20);
+  --c-avatar-status-bg:  #0a0f1e;
+  --c-avatar-extra-bg:   rgba(255, 255, 255, 0.10);
+  --c-avatar-extra-border:rgba(255, 255, 255, 0.20);
+  --c-avatar-extra-text: rgba(255, 255, 255, 0.70);
+
+  /* ─── Checkbox / Toggle ─── */
+  --c-checkbox-bg:          rgba(255, 255, 255, 0.07);
+  --c-checkbox-border:      rgba(255, 255, 255, 0.20);
+  --c-checkbox-text:        rgba(255, 255, 255, 0.80);
+  --c-toggle-off-bg:        rgba(255, 255, 255, 0.12);
+  --c-toggle-off-border:    rgba(255, 255, 255, 0.18);
+  --c-toggle-label:         rgba(255, 255, 255, 0.80);
+
+  /* ─── Select ─── */
+  --c-select-arrow: rgba(255, 255, 255, 0.50);
+
+  /* ─── Notification ─── */
+  --c-notif-bg:      rgba(0, 0, 0, 0.42);
+  --c-notif-border:  rgba(255, 255, 255, 0.07);
+  --c-notif-title:   #ffffff;
+  --c-notif-message: rgba(255, 255, 255, 0.45);
+  --c-notif-close:   rgba(255, 255, 255, 0.25);
+
+  /* ─── Select option BG ─── */
+  --c-option-bg: #0b1020;
+
+  /* ─── Fontes ─── */
+  --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* ─── Radius ─── */
+  --radius-sm:   0.375rem;
+  --radius-md:   0.75rem;
+  --radius-lg:   1rem;
+  --radius-xl:   1.5rem;
+  --radius-2xl:  2rem;
+  --radius-full: 9999px;
+
+  /* ─── Animações ─── */
+  --duration-fast:   150ms;
+  --duration-normal: 250ms;
+  --ease:        cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TEMA CLARO
+═══════════════════════════════════════════════════════════════════════════ */
+[data-theme="light"] {
+  --c-text-1:    #080c1a;
+  --c-text-2:    rgba(8, 12, 26, 0.58);
+  --c-text-3:    rgba(8, 12, 26, 0.36);
+  --c-text-4:    rgba(8, 12, 26, 0.18);
+  --c-text-mono: rgba(8, 12, 26, 0.40);
+  --c-text-blue: rgba(0, 98, 230, 0.78);
+
+  --c-bg: #dde4f8;
+
+  --c-glass-bg:      rgba(255, 255, 255, 0.72);
+  --c-glass-bg-sm:   rgba(255, 255, 255, 0.55);
+  --c-glass-bg-lg:   rgba(255, 255, 255, 0.86);
+  --c-glass-bg-blue: rgba(26, 122, 255, 0.07);
+
+  --c-border:      1px solid rgba(8, 12, 26, 0.09);
+  --c-border-sm:   1px solid rgba(8, 12, 26, 0.06);
+  --c-border-lg:   1px solid rgba(8, 12, 26, 0.15);
+  --c-border-blue: 1px solid rgba(26, 122, 255, 0.28);
+
+  --c-shadow-sm:  0 2px 8px rgba(30,50,120,.07),  inset 0 1px 0 rgba(255,255,255,.90);
+  --c-shadow-md:  0 8px 24px rgba(30,50,120,.11), inset 0 1px 0 rgba(255,255,255,.90);
+  --c-shadow-lg:  0 16px 48px rgba(30,50,120,.16),inset 0 1px 0 rgba(255,255,255,.95);
+  --c-shadow-glow:0 0 28px rgba(26,122,255,.20),   0 8px 24px rgba(30,50,120,.12);
+
+  --c-divider:         rgba(8, 12, 26, 0.08);
+  --c-dot-grid:        rgba(8, 12, 26, 0.05);
+  --c-terminal-bg:     rgba(255, 255, 255, 0.80);
+  --c-terminal-border: rgba(8, 12, 26, 0.08);
+
+  --c-input-bg:           rgba(255, 255, 255, 0.78);
+  --c-input-text:         #080c1a;
+  --c-input-border:       rgba(8, 12, 26, 0.12);
+  --c-input-label:        rgba(8, 12, 26, 0.72);
+  --c-input-helper:       rgba(8, 12, 26, 0.45);
+  --c-input-icon:         rgba(8, 12, 26, 0.35);
+  --c-input-icon-focus:   #0062e6;
+  --c-input-focus-border: rgba(26, 122, 255, 0.65);
+  --c-input-focus-ring:   rgba(26, 122, 255, 0.14);
+  --c-placeholder:        rgba(8, 12, 26, 0.28);
+
+  --c-btn-secondary-bg:     rgba(255, 255, 255, 0.75);
+  --c-btn-secondary-border: rgba(8, 12, 26, 0.12);
+  --c-btn-secondary-text:   #080c1a;
+  --c-btn-ghost-text:       rgba(8, 12, 26, 0.68);
+  --c-btn-ghost-border:     rgba(8, 12, 26, 0.14);
+
+  --c-badge-white-bg:      rgba(8, 12, 26, 0.07);
+  --c-badge-white-border:  rgba(8, 12, 26, 0.14);
+  --c-badge-white-text:    rgba(8, 12, 26, 0.78);
+  --c-badge-outline-text:  rgba(8, 12, 26, 0.55);
+  --c-badge-outline-border:rgba(8, 12, 26, 0.20);
+  --c-badge-dot-white:     rgba(8, 12, 26, 0.55);
+  --c-badge-dot-outline:   rgba(8, 12, 26, 0.35);
+
+  --c-avatar-border:     rgba(8, 12, 26, 0.15);
+  --c-avatar-status-bg:  #dde4f8;
+  --c-avatar-extra-bg:   rgba(8, 12, 26, 0.07);
+  --c-avatar-extra-border:rgba(8, 12, 26, 0.14);
+  --c-avatar-extra-text: rgba(8, 12, 26, 0.55);
+
+  --c-checkbox-bg:       rgba(255, 255, 255, 0.70);
+  --c-checkbox-border:   rgba(8, 12, 26, 0.18);
+  --c-checkbox-text:     rgba(8, 12, 26, 0.78);
+  --c-toggle-off-bg:     rgba(8, 12, 26, 0.09);
+  --c-toggle-off-border: rgba(8, 12, 26, 0.15);
+  --c-toggle-label:      rgba(8, 12, 26, 0.78);
+
+  --c-select-arrow: rgba(8, 12, 26, 0.45);
+
+  --c-notif-bg:      rgba(255, 255, 255, 0.80);
+  --c-notif-border:  rgba(8, 12, 26, 0.07);
+  --c-notif-title:   #080c1a;
+  --c-notif-message: rgba(8, 12, 26, 0.55);
+  --c-notif-close:   rgba(8, 12, 26, 0.25);
+
+  --c-option-bg: #f0f3ff;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESET
+═══════════════════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BODY — fundo + dot grid via variáveis
+═══════════════════════════════════════════════════════════════════════════ */
+body {
+  font-family: var(--font-sans);
+  background-color: var(--c-bg);
+  min-height: 100vh;
+  color: var(--c-text-1);
+  overflow-x: hidden;
+  transition: background-color 350ms var(--ease), color 350ms var(--ease);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(var(--c-dot-grid) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  z-index: 0;
+  transition: background-image 350ms ease;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GLASS UTILITIES — todas usam variáveis de tema
+═══════════════════════════════════════════════════════════════════════════ */
+.glass {
+  background:         var(--c-glass-bg);
+  backdrop-filter:    blur(16px) saturate(1.6);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+  border:             var(--c-border);
+  border-radius:      var(--radius-xl);
+  box-shadow:         var(--c-shadow-md);
+  transition:         background 350ms ease, border 350ms ease, box-shadow 350ms ease;
+}
+
+.glass-sm {
+  background:         var(--c-glass-bg-sm);
+  backdrop-filter:    blur(8px) saturate(1.4);
+  -webkit-backdrop-filter: blur(8px) saturate(1.4);
+  border:             var(--c-border-sm);
+  border-radius:      var(--radius-lg);
+  box-shadow:         var(--c-shadow-sm);
+  transition:         background 350ms ease, border 350ms ease, box-shadow 350ms ease;
+}
+
+.glass-lg {
+  background:         var(--c-glass-bg-lg);
+  backdrop-filter:    blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  border:             var(--c-border-lg);
+  border-radius:      var(--radius-2xl);
+  box-shadow:         var(--c-shadow-lg);
+  transition:         background 350ms ease, border 350ms ease, box-shadow 350ms ease;
+}
+
+.glass-blue {
+  background:         var(--c-glass-bg-blue);
+  backdrop-filter:    blur(16px) saturate(1.6);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+  border:             var(--c-border-blue);
+  border-radius:      var(--radius-xl);
+  box-shadow:         var(--c-shadow-glow);
+  transition:         background 350ms ease, border 350ms ease, box-shadow 350ms ease;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   KEYFRAMES
+═══════════════════════════════════════════════════════════════════════════ */
+@keyframes spin         { to { transform: rotate(360deg); } }
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px rgba(26,122,255,.70); }
+  50%       { opacity: .45; box-shadow: 0 0 3px rgba(26,122,255,.25); }
+}
+@keyframes theme-pop {
+  0%   { transform: scale(0.90); opacity: 0.6; }
+  60%  { transform: scale(1.08); }
+  100% { transform: scale(1.00); opacity: 1; }
+}

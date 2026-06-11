@@ -1,0 +1,142 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Plura – Responsive Utilities
+   Breakpoints: mobile ≤ 640px | tablet 641–1024px | desktop > 1024px
+   All rules use !important to override inline styles safely.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Page wrappers ───────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .r-layout        { padding: 4.5rem 1rem 2rem !important; }
+  .r-layout-center { padding: 4.5rem 1rem 2rem !important; }
+  .r-container     { padding-left: 0 !important; padding-right: 0 !important; }
+}
+
+/* ── Form cards (login, signup, create/edit company) ─────────────────────── */
+@media (max-width: 640px) {
+  .r-form-card { padding: 1.5rem 1.125rem !important; }
+}
+
+/* ── Address row (CEP + street) ──────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .r-addr-row  { flex-direction: column !important; }
+  .r-cep-field { width: 100% !important; }
+}
+
+/* ── Social links 2-col grid ─────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .r-social-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ── Photo upload grid ───────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .r-photo-grid { grid-template-columns: repeat(3, 1fr) !important; }
+}
+
+/* ── MyArea: profile card body ───────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .r-profile-body {
+    flex-direction: column !important;
+    align-items:    center  !important;
+  }
+  .r-profile-info {
+    min-width:   unset !important;
+    text-align:  center;
+  }
+  .r-profile-info-badges {
+    justify-content: center !important;
+  }
+}
+
+/* ── MyArea: stats section ───────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .r-profile-stats {
+    border-left:     none !important;
+    border-top:      1px solid var(--c-divider) !important;
+    padding-left:    0    !important;
+    padding-top:     1rem !important;
+    width:           100% !important;
+    justify-content: center !important;
+  }
+}
+
+/* ── Main 2-column grid (1fr 340px) ──────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .r-grid-main { grid-template-columns: 1fr !important; }
+}
+
+/* ── Notification items ──────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .r-notif-item    { flex-direction: column !important; align-items: flex-start !important; }
+  .r-notif-actions { width: 100% !important; }
+  .r-notif-actions > button { flex: 1 !important; justify-content: center !important; }
+}
+
+/* ── Collaborating company items in MyArea ───────────────────────────────── */
+@media (max-width: 640px) {
+  .r-collab-item { flex-wrap: wrap !important; }
+}
+
+/* ── Page section headers with button ────────────────────────────────────── */
+@media (max-width: 480px) {
+  .r-section-header { flex-direction: column !important; align-items: flex-start !important; gap: 0.75rem !important; }
+}
+
+/* ── MyCompanies: card grid ──────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .r-companies-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ── CompanyProfile: cover ───────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .r-cover        { height: 180px !important; }
+  .r-cover-avatar {
+    width:       56px  !important;
+    height:      56px  !important;
+    font-size:   1.375rem !important;
+    bottom:      -20px !important;
+    left:        1rem  !important;
+  }
+}
+
+/* ── CompanyProfile: cover top-bar nav ───────────────────────────────────── */
+@media (max-width: 640px) {
+  .r-cover-back-group  { top: 0.75rem !important; left: 0.75rem !important; right: auto !important; }
+  .r-cover-back        { font-size: 0.75rem !important; padding: 0.375rem 0.625rem !important; }
+  .r-cover-action-btn  { font-size: 0.75rem !important; padding: 0.375rem 0.625rem !important; }
+  .r-cover-edit-group  { top: 0.75rem !important; right: 0.75rem !important; }
+}
+
+/* ── CompanyProfile: info header ─────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .r-profile-head      { padding-top: 2rem !important; }
+  .r-profile-head-row  {
+    flex-direction: column  !important;
+    align-items:    flex-start !important;
+    gap:            0.75rem !important;
+  }
+}
+
+/* ── CompanyProfile: content grid (1fr 340px) ────────────────────────────── */
+@media (max-width: 1024px) {
+  .r-profile-content-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ── Collaborator modal ──────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .r-modal { padding: 1.25rem !important; border-radius: 1rem !important; }
+}
+
+/* ── Nav bars: hide center label on tiny screens ─────────────────────────── */
+@media (max-width: 480px) {
+  .r-nav-label { display: none !important; }
+}
+
+/* ── Company profile: social links row ───────────────────────────────────── */
+@media (max-width: 640px) {
+  .r-social-row { flex-wrap: wrap !important; gap: 0.375rem !important; }
+}
+
+/* ── Tablet: keep form card max-width sane ───────────────────────────────── */
+@media (max-width: 1024px) and (min-width: 641px) {
+  .r-form-card { padding: 2rem 1.75rem !important; }
+}
