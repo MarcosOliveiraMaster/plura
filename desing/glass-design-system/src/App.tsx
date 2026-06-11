@@ -79,8 +79,9 @@ export default function App() {
 
   if (initializing) return <Loader />
 
-  if (!user || page === 'login')  return <LoginPage  onNavigate={navigate} />
-  if (page === 'signup')          return <SignUpPage  onNavigate={navigate} />
+  // Páginas públicas — acessíveis sem sessão
+  if (page === 'signup') return <SignUpPage onNavigate={navigate} />
+  if (!user)             return <LoginPage  onNavigate={navigate} />
 
   if (page === 'myarea') return (
     <MyAreaPage user={user} onNavigate={navigate} onViewCompany={viewCompany} />
