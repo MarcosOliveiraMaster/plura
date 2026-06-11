@@ -177,7 +177,7 @@ export async function inviteCollaborator(
       company_id:      companyId,
       collaborator_id: collab.id,
     })
-    if (notifErr) console.error('Erro ao criar notificação:', notifErr)
+    if (notifErr) throw new Error(`Erro ao criar notificação: ${notifErr.message}`)
   }
 
   return collab
@@ -190,7 +190,7 @@ export async function removeCollaborator(collaboratorId: string) {
 
 export async function respondToInvite(collaboratorId: string, accept: boolean) {
   const status = accept ? 'accepted' : 'declined'
-  const updates: Record<string, string> = { status }
+  const updates: { status: string; user_id?: string } = { status }
 
   if (accept) {
     const { data: { user } } = await supabase.auth.getUser()
