@@ -3,6 +3,7 @@ import type { User } from '@supabase/supabase-js'
 import './design-system/global.css'
 import './design-system/responsive.css'
 import { supabase } from './lib/supabase'
+import HomePage           from './pages/HomePage'
 import LoginPage          from './pages/LoginPage'
 import SignUpPage         from './pages/SignUpPage'
 import MyAreaPage         from './pages/MyAreaPage'
@@ -12,17 +13,14 @@ import CompanyProfilePage from './pages/CompanyProfilePage'
 import AuthCallbackPage   from './pages/AuthCallbackPage'
 
 export type Page =
-  | 'login' | 'signup' | 'myarea'
+  | 'home' | 'login' | 'signup' | 'myarea'
   | 'create-company' | 'edit-company' | 'my-companies'
   | 'company-profile' | 'auth-callback'
 
 /* ─── Loading spinner ────────────────────────────────────────────────────── */
 function Loader() {
   return (
-    <div style={{
-      minHeight: '100vh', display: 'flex',
-      alignItems: 'center', justifyContent: 'center',
-    }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{
         width: '2rem', height: '2rem',
         border: '2px solid rgba(26,122,255,0.2)',
@@ -37,14 +35,14 @@ function Loader() {
 
 /* ─── App ────────────────────────────────────────────────────────────────── */
 export default function App() {
-  const [page,            setPage]            = useState<Page>('login')
+  const [page,            setPage]            = useState<Page>('home')
   const [user,            setUser]            = useState<User | null>(null)
   const [activeCompanyId, setActiveCompanyId] = useState<string | null>(null)
+  const [companyFromPage, setCompanyFromPage] = useState<Page>('home')
   const [initializing,    setInitializing]    = useState(true)
   const isAuthCallback    = useRef(false)
 
   useEffect(() => {
-    // Detect auth callback hash params (email confirmation redirect)
     const hash = window.location.hash
     if (hash && (hash.includes('access_token') || hash.includes('type=signup') || hash.includes('error='))) {
       isAuthCallback.current = true
@@ -53,21 +51,21 @@ export default function App() {
     }
 
     supabase.auth.getSession().then(({ data }) => {
-      const u = data.session?.user ?? null
-      setUser(u)
-      if (u && !isAuthCallback.current) setPage('myarea')
+      setUser(data.session?.user ?? null)
+      // Sempre inicia na home — usuário logado vê botão "Minha Área"
+      if (!isAuthCallback.current) setPage('home')
       setInitializing(false)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       const u = session?.user ?? null
       setUser(u)
-      if (!isAuthCallback.current && u && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+      if (!isAuthCallback.current && u && event === 'SIGNED_IN') {
         setPage('myarea')
       }
       if (event === 'SIGNED_OUT') {
         isAuthCallback.current = false
-        setPage('login')
+        setPage('home')
         setActiveCompanyId(null)
       }
     })
@@ -78,6 +76,7 @@ export default function App() {
   const navigate = (p: Page) => setPage(p)
 
   const viewCompany = (id: string) => {
+    setCompanyFromPage(page)
     setActiveCompanyId(id)
     setPage('company-profile')
   }
@@ -90,27 +89,37 @@ export default function App() {
   if (initializing) return <Loader />
 
   // Páginas públicas — acessíveis sem sessão
-  if (page === 'signup')        return <SignUpPage onNavigate={navigate} />
+  if (page === 'home') return (
+    <HomePage user={user} onNavigate={navigate} onViewCompany={viewCompany} />
+  )
+  if (page === 'signup') return <SignUpPage onNavigate={navigate} />
+  if (page === 'login')  return <LoginPage  onNavigate={navigate} />
   if (page === 'auth-callback') return (
     <AuthCallbackPage
       user={user}
       onNavigate={p => { isAuthCallback.current = false; navigate(p) }}
     />
   )
-  if (!user) return <LoginPage onNavigate={navigate} />
+  // Perfil de empresa é público
+  if (page === 'company-profile' && activeCompanyId) return (
+    <CompanyProfilePage
+      user={user}
+      companyId={activeCompanyId}
+      onNavigate={navigate}
+      onEditCompany={editCompany}
+      backPage={companyFromPage}
+    />
+  )
+
+  // A partir daqui requer usuário autenticado
+  if (!user) return <HomePage user={null} onNavigate={navigate} onViewCompany={viewCompany} />
 
   if (page === 'myarea') return (
     <MyAreaPage user={user} onNavigate={navigate} onViewCompany={viewCompany} />
   )
-
   if (page === 'create-company') return (
-    <CreateCompanyPage
-      user={user}
-      onNavigate={navigate}
-      onSaved={() => navigate('my-companies')}
-    />
+    <CreateCompanyPage user={user} onNavigate={navigate} onSaved={() => navigate('my-companies')} />
   )
-
   if (page === 'edit-company' && activeCompanyId) return (
     <CreateCompanyPage
       user={user}
@@ -119,22 +128,12 @@ export default function App() {
       onSaved={() => navigate('my-companies')}
     />
   )
-
   if (page === 'my-companies') return (
     <MyCompaniesPage
       user={user}
       onNavigate={navigate}
       onEditCompany={editCompany}
       onViewCompany={viewCompany}
-    />
-  )
-
-  if (page === 'company-profile' && activeCompanyId) return (
-    <CompanyProfilePage
-      user={user}
-      companyId={activeCompanyId}
-      onNavigate={navigate}
-      onEditCompany={editCompany}
     />
   )
 

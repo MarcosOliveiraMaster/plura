@@ -10,10 +10,11 @@ import pluraLogo       from '../assets/plura.png'
 import type { Page } from '../App'
 
 interface CompanyProfilePageProps {
-  user:          User
+  user:          User | null
   companyId:     string
   onNavigate:    (page: Page) => void
   onEditCompany: (companyId: string) => void
+  backPage?:     Page
 }
 
 /* ─── Grain ─────────────────────────────────────────────────────────────── */
@@ -193,7 +194,7 @@ function CollaboratorModal({ company, ownerId, isOwner, onClose, onRefresh }: {
 }
 
 /* ─── CompanyProfilePage ─────────────────────────────────────────────────── */
-export default function CompanyProfilePage({ user, companyId, onNavigate, onEditCompany }: CompanyProfilePageProps) {
+export default function CompanyProfilePage({ user, companyId, onNavigate, onEditCompany, backPage = 'my-companies' }: CompanyProfilePageProps) {
   const [company,         setCompany]         = useState<CompanyFull | null>(null)
   const [loading,         setLoading]         = useState(true)
   const [showModal,       setShowModal]       = useState(false)
@@ -220,12 +221,12 @@ export default function CompanyProfilePage({ user, companyId, onNavigate, onEdit
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', color: 'var(--c-text-3)' }}>
         <p>Empresa não encontrada</p>
-        <Button variant="ghost" onClick={() => onNavigate('my-companies')}>← Voltar</Button>
+        <Button variant="ghost" onClick={() => onNavigate(backPage)}>← Voltar</Button>
       </div>
     )
   }
 
-  const isOwner    = company.owner_id === user.id
+  const isOwner    = !!user && company.owner_id === user.id
   const gradient   = CATEGORY_GRADIENT[company.category] ?? CATEGORY_GRADIENT['outros']
   const initials   = company.name.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase()
   const coverPhoto = company.company_photos.find(p => p.is_cover) ?? company.company_photos[0]
@@ -248,7 +249,7 @@ export default function CompanyProfilePage({ user, companyId, onNavigate, onEdit
       {showModal && (
         <CollaboratorModal
           company={company}
-          ownerId={user.id}
+          ownerId={user?.id ?? ''}
           isOwner={isOwner}
           onClose={() => setShowModal(false)}
           onRefresh={loadCompany}
@@ -263,7 +264,7 @@ export default function CompanyProfilePage({ user, companyId, onNavigate, onEdit
 
           {/* Back */}
           <div className="r-cover-back-group" style={{ position: 'absolute', top: '1.5rem', left: '1.5rem', right: '5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <button className="r-cover-back" onClick={() => onNavigate('my-companies')} style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '9999px', padding: '0.5rem 1rem', color: '#fff', fontSize: '0.875rem', fontFamily: 'inherit', cursor: 'pointer', transition: 'background 150ms ease' }}
+            <button className="r-cover-back" onClick={() => onNavigate(backPage)} style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '9999px', padding: '0.5rem 1rem', color: '#fff', fontSize: '0.875rem', fontFamily: 'inherit', cursor: 'pointer', transition: 'background 150ms ease' }}
               onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.65)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.45)')}>
               <ArrowLeftIcon /> Minhas empresas

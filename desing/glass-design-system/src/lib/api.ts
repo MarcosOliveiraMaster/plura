@@ -59,6 +59,26 @@ export type CompanyFull = Database['public']['Tables']['companies']['Row'] & {
   })[]
 }
 
+export type CompanyCard = {
+  id: string
+  name: string
+  category: Database['public']['Tables']['companies']['Row']['category']
+  city: string | null
+  state: string | null
+  description: string | null
+  accessibility_features: Database['public']['Tables']['companies']['Row']['accessibility_features']
+  company_photos: { id: string; storage_path: string; is_cover: boolean | null; order_index: number | null }[]
+}
+
+export async function getAllCompanies(): Promise<CompanyCard[]> {
+  const { data, error } = await supabase
+    .from('companies')
+    .select('id, name, category, city, state, description, accessibility_features, company_photos(id, storage_path, is_cover, order_index)')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return (data ?? []) as CompanyCard[]
+}
+
 export async function getMyCompanies(userId: string): Promise<CompanyFull[]> {
   const { data, error } = await supabase
     .from('companies')

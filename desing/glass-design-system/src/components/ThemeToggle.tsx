@@ -35,11 +35,21 @@ export const ThemeToggle = () => {
   }, [dark])
 
   return (
+    <div style={{
+      position: 'fixed',
+      bottom: '1.5rem',
+      left: 0,
+      right: 0,
+      display: 'flex',
+      justifyContent: 'center',
+      zIndex: 9998,
+      pointerEvents: 'none',
+    }}>
     <button
       aria-label={dark ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
       onClick={() => setDark(d => !d)}
       style={{
-        position: 'fixed', top: '1.375rem', right: '1.5rem', zIndex: 9998,
+        pointerEvents: 'auto',
         display: 'flex', alignItems: 'center', gap: '0.5rem',
         padding: '0.4375rem 0.875rem',
         background: 'var(--c-glass-bg)',
@@ -54,13 +64,13 @@ export const ThemeToggle = () => {
         fontSize: '0.6875rem',
         letterSpacing: '0.06em',
         fontWeight: 500,
-        transition: 'color 200ms ease, background 350ms ease, border 350ms ease, box-shadow 200ms ease',
+        transition: 'color 200ms ease, background 350ms ease, border 350ms ease, box-shadow 200ms ease, transform 150ms ease',
         outline: 'none',
         userSelect: 'none',
       }}
       onMouseEnter={e => {
         (e.currentTarget as HTMLButtonElement).style.color = 'var(--c-text-1)'
-        ;(e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)'
+        ;(e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)'
       }}
       onMouseLeave={e => {
         (e.currentTarget as HTMLButtonElement).style.color = 'var(--c-text-2)'
@@ -101,5 +111,6 @@ export const ThemeToggle = () => {
         {dark ? 'Dark' : 'Light'}
       </span>
     </button>
+    </div>
   )
 }
