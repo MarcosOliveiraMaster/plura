@@ -5,7 +5,7 @@ import { Button } from '../components/Button'
 import { Badge } from '../components/Badge'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { supabase } from '../lib/supabase'
-import { getProfile, updateProfile, getNotifications, respondToInvite, markNotificationRead, getCollaboratingCompanies } from '../lib/api'
+import { getProfile, updateProfile, uploadAvatar, getNotifications, respondToInvite, markNotificationRead, getCollaboratingCompanies } from '../lib/api'
 import type { NotificationFull, CompanyFull } from '../lib/api'
 import type { Database } from '../lib/database.types'
 import pluraLogo from '../assets/plura.png'
@@ -110,6 +110,7 @@ const ActionCard = ({ icon, title, description, variant = 'default', onClick }: 
 export default function MyAreaPage({ user, onNavigate, onViewCompany }: MyAreaPageProps) {
   const [photoUrl,      setPhotoUrl]      = useState<string | null>(null)
   const [avatarHover,   setAvatarHover]   = useState(false)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [accessibility, setAccessibility] = useState<A11yNeed[]>([])
   const [savingA11y,    setSavingA11y]    = useState(false)
   const [savedA11y,     setSavedA11y]     = useState(false)
@@ -134,6 +135,7 @@ export default function MyAreaPage({ user, onNavigate, onViewCompany }: MyAreaPa
           getCollaboratingCompanies(user.id),
         ])
         setProfileName(profile.name ?? '')
+        setPhotoUrl(profile.avatar_url ?? null)
         setAccessibility((profile.accessibility_needs ?? []) as A11yNeed[])
         setMemberSince(profile.created_at
           ? new Date(profile.created_at).toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' })
@@ -154,9 +156,19 @@ export default function MyAreaPage({ user, onNavigate, onViewCompany }: MyAreaPa
     load()
   }, [user.id])
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) setPhotoUrl(URL.createObjectURL(file))
+    if (!file) return
+    setPhotoUrl(URL.createObjectURL(file))
+    setUploadingAvatar(true)
+    try {
+      const url = await uploadAvatar(user.id, file)
+      setPhotoUrl(url)
+    } catch (err) {
+      console.error('Erro ao salvar foto de perfil:', err)
+    } finally {
+      setUploadingAvatar(false)
+    }
   }
 
   const saveA11y = async () => {
@@ -254,8 +266,11 @@ export default function MyAreaPage({ user, onNavigate, onViewCompany }: MyAreaPa
                         {initials}
                       </div>
                     )}
-                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.52)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', opacity: avatarHover ? 1 : 0, transition: 'opacity 200ms ease' }}>
-                      <CameraIcon />
+                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.52)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', opacity: uploadingAvatar || avatarHover ? 1 : 0, transition: 'opacity 200ms ease' }}>
+                      {uploadingAvatar
+                        ? <div style={{ width: '20px', height: '20px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                        : <CameraIcon />
+                      }
                     </div>
                   </div>
                   <div onClick={() => fileRef.current?.click()} style={{ position: 'absolute', bottom: 0, right: 0, width: '26px', height: '26px', borderRadius: '50%', background: '#1a7aff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--c-bg)', boxShadow: '0 2px 8px rgba(26,122,255,0.45)', color: '#fff' }}>

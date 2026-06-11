@@ -16,9 +16,26 @@ export async function getProfile(userId: string) {
 export async function updateProfile(userId: string, updates: {
   name?: string
   accessibility_needs?: A11yNeed[]
+  avatar_url?: string
 }) {
   const { error } = await supabase.from('profiles').update(updates).eq('id', userId)
   if (error) throw error
+}
+
+export async function uploadAvatar(userId: string, file: File): Promise<string> {
+  const ext  = file.name.split('.').pop() ?? 'jpg'
+  const path = `${userId}/avatar.${ext}`
+
+  const { error: upErr } = await supabase.storage
+    .from('avatars')
+    .upload(path, file, { upsert: true })
+  if (upErr) throw upErr
+
+  const { data } = supabase.storage.from('avatars').getPublicUrl(path)
+  const url = `${data.publicUrl}?t=${Date.now()}`
+
+  await updateProfile(userId, { avatar_url: data.publicUrl })
+  return url
 }
 
 /* ─── Companies ───────────────────────────────────────────────────────────── */
