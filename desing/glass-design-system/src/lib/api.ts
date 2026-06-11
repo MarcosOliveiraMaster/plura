@@ -157,7 +157,7 @@ export async function inviteCollaborator(
       company_id:      companyId,
       collaborator_id: collab.id,
     })
-    if (notifErr) console.error('Erro ao criar notificação:', notifErr)
+    if (notifErr) throw new Error(`Erro ao criar notificação: ${notifErr.message}`)
   }
 
   return collab
