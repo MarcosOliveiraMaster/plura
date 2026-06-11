@@ -4,9 +4,11 @@ import { Input } from '../components/Input'
 import { Button } from '../components/Button'
 import { Checkbox } from '../components/Input'
 import { ThemeToggle } from '../components/ThemeToggle'
+import { supabase } from '../lib/supabase'
 import pluraLogo from '../assets/plura.png'
+import type { Page } from '../App'
 
-/* ─── Grain overlay ─────────────────────────────────────────────────────── */
+/* ─── Grain ─────────────────────────────────────────────────────────────── */
 const Grain = () => (
   <div
     aria-hidden
@@ -19,21 +21,19 @@ const Grain = () => (
   />
 )
 
-/* ─── Ícones inline ─────────────────────────────────────────────────────── */
+/* ─── Ícones ─────────────────────────────────────────────────────────────── */
 const EmailIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <rect x="2" y="4" width="20" height="16" rx="2" />
     <polyline points="22,6 12,13 2,6" />
   </svg>
 )
-
 const LockIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <rect x="3" y="11" width="18" height="11" rx="2" />
     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
   </svg>
 )
-
 const GoogleIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -42,7 +42,6 @@ const GoogleIcon = () => (
     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
   </svg>
 )
-
 const EyeIcon = ({ off }: { off?: boolean }) => off ? (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
@@ -56,108 +55,185 @@ const EyeIcon = ({ off }: { off?: boolean }) => off ? (
 )
 
 interface LoginPageProps {
-  onNavigate: (page: 'signup' | 'myarea') => void
+  onNavigate: (page: Page) => void
+}
+
+/* ─── Modal de recuperação de senha ─────────────────────────────────────── */
+function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
+  const [email,   setEmail]   = useState('')
+  const [loading, setLoading] = useState(false)
+  const [sent,    setSent]    = useState(false)
+  const [error,   setError]   = useState('')
+
+  const handleSend = async () => {
+    if (!email.trim()) { setError('Informe seu e-mail'); return }
+    setLoading(true)
+    const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: window.location.origin,
+    })
+    setLoading(false)
+    if (err) { setError(err.message); return }
+    setSent(true)
+  }
+
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 10000,
+        background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem',
+      }}
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+    >
+      <div style={{
+        width: '100%', maxWidth: '380px',
+        background: 'var(--c-glass-bg)', backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)', border: 'var(--c-border)',
+        borderRadius: '1.5rem', boxShadow: '0 32px 80px rgba(0,0,0,0.50)',
+        padding: '2rem',
+      }}>
+        <h3 style={{ fontSize: '1.125rem', fontWeight: 800, color: 'var(--c-text-1)', marginBottom: '0.5rem' }}>
+          Recuperar senha
+        </h3>
+        <p style={{ fontSize: '0.875rem', color: 'var(--c-text-3)', marginBottom: '1.25rem' }}>
+          Enviaremos um link de redefinição para o seu e-mail.
+        </p>
+        {sent ? (
+          <div style={{
+            padding: '1rem', borderRadius: '0.875rem',
+            background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)',
+            color: '#4ade80', fontSize: '0.875rem', textAlign: 'center',
+          }}>
+            Link enviado! Verifique sua caixa de entrada.
+          </div>
+        ) : (
+          <>
+            <Input
+              label="E-mail"
+              type="email"
+              placeholder="voce@exemplo.com"
+              value={email}
+              onChange={e => { setEmail(e.target.value); setError('') }}
+              error={error}
+              leadingIcon={<EmailIcon />}
+            />
+            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+              <Button variant="ghost" size="sm" style={{ flex: 1, justifyContent: 'center' }} onClick={onClose}>
+                Cancelar
+              </Button>
+              <Button size="sm" loading={loading} style={{ flex: 1, justifyContent: 'center' }} onClick={handleSend}>
+                Enviar link
+              </Button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
 }
 
 /* ─── LoginPage ─────────────────────────────────────────────────────────── */
 export default function LoginPage({ onNavigate }: LoginPageProps) {
-  const [email,       setEmail]       = useState('')
-  const [password,    setPassword]    = useState('')
-  const [showPass,    setShowPass]    = useState(false)
-  const [remember,    setRemember]    = useState(false)
-  const [loading,        setLoading]        = useState(false)
-  const [loadingGoogle,  setLoadingGoogle]  = useState(false)
-  const [emailError,     setEmailError]     = useState('')
+  const [email,         setEmail]         = useState('')
+  const [password,      setPassword]      = useState('')
+  const [showPass,      setShowPass]      = useState(false)
+  const [remember,      setRemember]      = useState(false)
+  const [loading,       setLoading]       = useState(false)
+  const [loadingGoogle, setLoadingGoogle] = useState(false)
+  const [showForgot,    setShowForgot]    = useState(false)
+  const [errors,        setErrors]        = useState<{ email?: string; password?: string; general?: string }>({})
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const errs: typeof errors = {}
+    if (!email.trim())    errs.email    = 'Informe seu e-mail'
+    if (!password.trim()) errs.password = 'Informe sua senha'
+    if (Object.keys(errs).length) { setErrors(errs); return }
+
     setLoading(true)
-    setTimeout(() => { setLoading(false); onNavigate('myarea') }, 1400)
+    setErrors({})
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+    setLoading(false)
+    if (error) {
+      setErrors({ general: 'E-mail ou senha incorretos' })
+    }
+    // onAuthStateChange in App.tsx will handle navigation
+  }
+
+  const handleGoogle = async () => {
+    setLoadingGoogle(true)
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin },
+    })
+    setLoadingGoogle(false)
   }
 
   return (
     <>
       <Grain />
+      {showForgot && <ForgotPasswordModal onClose={() => setShowForgot(false)} />}
 
-      {/* ThemeToggle fixo no canto */}
       <div style={{ position: 'fixed', top: '1.25rem', right: '1.5rem', zIndex: 100 }}>
         <ThemeToggle />
       </div>
 
-      {/* Layout centralizado */}
       <div className="r-layout-center" style={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '2rem 1rem',
-        position: 'relative',
-        zIndex: 1,
+        minHeight: '100vh', display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        padding: '2rem 1rem', position: 'relative', zIndex: 1,
       }}>
-
-        {/* ── Card principal ─────────────────────────────────────────────── */}
         <GlassCard variant="lg" className="r-form-card" style={{ width: '100%', maxWidth: '420px', padding: '2.5rem 2rem' }}>
 
-          {/* ── Topo: logo ────────────────────────────────────────────── */}
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
-            <img
-              src={pluraLogo}
-              alt="Plura"
-              style={{ height: '48px', objectFit: 'contain', userSelect: 'none' }}
-              draggable={false}
-            />
+            <img src={pluraLogo} alt="Plura" style={{ height: '48px', objectFit: 'contain', userSelect: 'none' }} draggable={false} />
           </div>
 
-          {/* ── Título ────────────────────────────────────────────────── */}
           <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-            <h1 style={{
-              fontSize: '1.625rem', fontWeight: 800,
-              letterSpacing: '-0.035em', color: 'var(--c-text-1)',
-              marginBottom: '0.375rem',
-              transition: 'color 350ms ease',
-            }}>
+            <h1 style={{ fontSize: '1.625rem', fontWeight: 800, letterSpacing: '-0.035em', color: 'var(--c-text-1)', marginBottom: '0.375rem', transition: 'color 350ms ease' }}>
               Bem-vindo de volta
             </h1>
-            <p style={{
-              fontSize: '0.9375rem', color: 'var(--c-text-2)',
-              lineHeight: 1.5, transition: 'color 350ms ease',
-            }}>
+            <p style={{ fontSize: '0.9375rem', color: 'var(--c-text-2)', lineHeight: 1.5, transition: 'color 350ms ease' }}>
               Faça login para continuar
             </p>
           </div>
 
-          {/* ── Formulário ────────────────────────────────────────────── */}
+          {errors.general && (
+            <div style={{
+              marginBottom: '1rem', padding: '0.75rem 1rem', borderRadius: '0.75rem',
+              background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)',
+              fontSize: '0.875rem', color: '#f87171', textAlign: 'center',
+            }}>
+              {errors.general}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} noValidate>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.125rem' }}>
-
               <Input
                 label="E-mail"
                 type="email"
                 placeholder="voce@exemplo.com"
                 value={email}
-                onChange={e => { setEmail(e.target.value); setEmailError('') }}
-                error={emailError}
+                onChange={e => { setEmail(e.target.value); setErrors(p => ({ ...p, email: '', general: '' })) }}
+                error={errors.email}
                 autoComplete="email"
                 leadingIcon={<EmailIcon />}
               />
-
               <Input
                 label="Senha"
                 type={showPass ? 'text' : 'password'}
                 placeholder="••••••••"
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={e => { setPassword(e.target.value); setErrors(p => ({ ...p, password: '', general: '' })) }}
+                error={errors.password}
                 autoComplete="current-password"
                 leadingIcon={<LockIcon />}
                 trailingIcon={
                   <button
                     type="button"
                     onClick={() => setShowPass(v => !v)}
-                    style={{
-                      background: 'none', border: 'none', padding: 0,
-                      cursor: 'pointer', display: 'flex', color: 'inherit',
-                    }}
+                    style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', color: 'inherit' }}
                     aria-label={showPass ? 'Ocultar senha' : 'Mostrar senha'}
                   >
                     <EyeIcon off={showPass} />
@@ -165,19 +241,12 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
                 }
               />
 
-              {/* Linha: lembrar + esqueceu */}
-              <div style={{
-                display: 'flex', alignItems: 'center',
-                justifyContent: 'space-between', gap: '0.5rem',
-              }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
                 <Checkbox label="Lembrar de mim" checked={remember} onChange={setRemember} />
                 <a
                   href="#"
-                  style={{
-                    fontSize: '0.875rem', color: 'var(--c-text-blue)',
-                    textDecoration: 'none', whiteSpace: 'nowrap',
-                    transition: 'opacity 150ms ease',
-                  }}
+                  onClick={e => { e.preventDefault(); setShowForgot(true) }}
+                  style={{ fontSize: '0.875rem', color: 'var(--c-text-blue)', textDecoration: 'none', whiteSpace: 'nowrap', transition: 'opacity 150ms ease' }}
                   onMouseEnter={e => (e.currentTarget.style.opacity = '0.75')}
                   onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
                 >
@@ -185,126 +254,63 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
                 </a>
               </div>
 
-              <Button
-                type="submit"
-                size="lg"
-                loading={loading}
-                style={{ width: '100%', justifyContent: 'center', marginTop: '0.25rem' }}
-              >
+              <Button type="submit" size="lg" loading={loading} style={{ width: '100%', justifyContent: 'center', marginTop: '0.25rem' }}>
                 {loading ? 'Entrando…' : 'Entrar'}
               </Button>
-
             </div>
           </form>
 
-          {/* ── Divider ───────────────────────────────────────────────── */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: '0.875rem',
-            margin: '1.75rem 0',
-          }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem', margin: '1.75rem 0' }}>
             <div style={{ flex: 1, height: '1px', background: 'var(--c-divider)' }} />
-            <span style={{
-              fontSize: '0.75rem', color: 'var(--c-text-3)',
-              fontFamily: 'var(--font-mono)', letterSpacing: '0.08em',
-              transition: 'color 350ms ease',
-            }}>ou</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--c-text-3)', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', transition: 'color 350ms ease' }}>ou</span>
             <div style={{ flex: 1, height: '1px', background: 'var(--c-divider)' }} />
           </div>
 
-          {/* ── Login social: Google ──────────────────────────────────── */}
           <button
             type="button"
             disabled={loadingGoogle}
-            onClick={() => { setLoadingGoogle(true); setTimeout(() => setLoadingGoogle(false), 2000) }}
+            onClick={handleGoogle}
             style={{
-              width: '100%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              gap: '0.75rem',
-              padding: '0.75rem 1.25rem',
-              background: 'var(--c-btn-secondary-bg)',
-              backdropFilter: 'blur(16px)',
-              border: '1px solid var(--c-btn-secondary-border)',
-              borderRadius: '0.875rem',
-              color: 'var(--c-btn-secondary-text)',
-              fontSize: '0.9375rem', fontWeight: 600,
-              fontFamily: 'inherit',
-              cursor: loadingGoogle ? 'not-allowed' : 'pointer',
+              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: '0.75rem', padding: '0.75rem 1.25rem',
+              background: 'var(--c-btn-secondary-bg)', backdropFilter: 'blur(16px)',
+              border: '1px solid var(--c-btn-secondary-border)', borderRadius: '0.875rem',
+              color: 'var(--c-btn-secondary-text)', fontSize: '0.9375rem', fontWeight: 600,
+              fontFamily: 'inherit', cursor: loadingGoogle ? 'not-allowed' : 'pointer',
               opacity: loadingGoogle ? 0.6 : 1,
               transition: 'transform 150ms ease, box-shadow 150ms ease, opacity 150ms ease, background 350ms ease',
-              boxShadow: 'var(--c-shadow-sm)',
-              outline: 'none',
-              marginBottom: '1.5rem',
+              boxShadow: 'var(--c-shadow-sm)', outline: 'none', marginBottom: '1.5rem',
             }}
-            onMouseEnter={e => {
-              if (!loadingGoogle) {
-                (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)'
-                ;(e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 24px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.14)'
-              }
-            }}
-            onMouseLeave={e => {
-              if (!loadingGoogle) {
-                (e.currentTarget as HTMLButtonElement).style.transform = ''
-                ;(e.currentTarget as HTMLButtonElement).style.boxShadow = 'var(--c-shadow-sm)'
-              }
-            }}
-            onMouseDown={e => { if (!loadingGoogle) (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.98)' }}
-            onMouseUp={e => { if (!loadingGoogle) (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)' }}
+            onMouseEnter={e => { if (!loadingGoogle) { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 24px rgba(0,0,0,0.22)' } }}
+            onMouseLeave={e => { if (!loadingGoogle) { (e.currentTarget as HTMLButtonElement).style.transform = ''; (e.currentTarget as HTMLButtonElement).style.boxShadow = 'var(--c-shadow-sm)' } }}
           >
             {loadingGoogle ? (
-              <span style={{
-                width: '1.125rem', height: '1.125rem',
-                border: '2px solid currentColor', borderTopColor: 'transparent',
-                borderRadius: '50%', display: 'inline-block',
-                animation: 'spin 0.7s linear infinite',
-              }} />
-            ) : (
-              <GoogleIcon />
-            )}
+              <span style={{ width: '1.125rem', height: '1.125rem', border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.7s linear infinite' }} />
+            ) : <GoogleIcon />}
             {loadingGoogle ? 'Conectando…' : 'Continuar com Google'}
           </button>
 
-          {/* ── Criar conta ───────────────────────────────────────────── */}
-          <p style={{
-            textAlign: 'center', fontSize: '0.9375rem',
-            color: 'var(--c-text-2)', transition: 'color 350ms ease',
-          }}>
+          <p style={{ textAlign: 'center', fontSize: '0.9375rem', color: 'var(--c-text-2)', transition: 'color 350ms ease' }}>
             Não tem uma conta?{' '}
-            <a
-              href="#"
-              onClick={e => { e.preventDefault(); onNavigate('signup') }}
-              style={{
-                color: 'var(--c-text-blue)', fontWeight: 600,
-                textDecoration: 'none', transition: 'opacity 150ms ease',
-              }}
+            <a href="#" onClick={e => { e.preventDefault(); onNavigate('signup') }} style={{ color: 'var(--c-text-blue)', fontWeight: 600, textDecoration: 'none', transition: 'opacity 150ms ease' }}
               onMouseEnter={e => (e.currentTarget.style.opacity = '0.75')}
-              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-            >
+              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
               Criar conta →
             </a>
           </p>
 
         </GlassCard>
 
-        {/* ── Footer ─────────────────────────────────────────────────────── */}
-        <footer style={{
-          marginTop: '2rem', textAlign: 'center',
-          fontFamily: 'var(--font-mono)', fontSize: '0.6875rem',
-          color: 'var(--c-text-4)', transition: 'color 350ms ease',
-          display: 'flex', gap: '1.25rem', alignItems: 'center',
-        }}>
+        <footer style={{ marginTop: '2rem', textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: '0.6875rem', color: 'var(--c-text-4)', transition: 'color 350ms ease', display: 'flex', gap: '1.25rem', alignItems: 'center' }}>
           <span>© 2026 Plura</span>
           <span style={{ opacity: 0.4 }}>·</span>
           <a href="#" style={{ color: 'inherit', textDecoration: 'none', opacity: 0.7 }}>Termos</a>
           <span style={{ opacity: 0.4 }}>·</span>
           <a href="#" style={{ color: 'inherit', textDecoration: 'none', opacity: 0.7 }}>Privacidade</a>
         </footer>
-
       </div>
 
-      <style>{`
-        ::placeholder { color: var(--c-placeholder); }
-        option { background: var(--c-option-bg) !important; color: var(--c-input-text); }
-      `}</style>
+      <style>{`::placeholder{color:var(--c-placeholder);}@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </>
   )
 }
