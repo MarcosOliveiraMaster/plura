@@ -10,9 +10,11 @@ import type { Page } from '../App'
 type A11yFeature = Database['public']['Enums']['accessibility_feature']
 
 interface HomePageProps {
-  user:          User | null
-  onNavigate:    (page: Page) => void
-  onViewCompany: (id: string) => void
+  user:               User | null
+  onNavigate:         (page: Page) => void
+  onViewCompany:      (id: string) => void
+  initialA11yFilter?: A11yFeature[] | null
+  onPrefillConsumed?: () => void
 }
 
 /* ─── Maps ───────────────────────────────────────────────────────────────── */
@@ -225,14 +227,15 @@ function CompanyGridCard({ company, onClick }: { company: CompanyCard; onClick: 
 }
 
 /* ─── HomePage ───────────────────────────────────────────────────────────── */
-export default function HomePage({ user, onNavigate, onViewCompany }: HomePageProps) {
+export default function HomePage({ user, onNavigate, onViewCompany, initialA11yFilter, onPrefillConsumed }: HomePageProps) {
   const [companies,    setCompanies]    = useState<CompanyCard[]>([])
   const [loading,      setLoading]      = useState(true)
   const [searchName,   setSearchName]   = useState('')
   const [searchCity,   setSearchCity]   = useState('')
   const [searchAddr,   setSearchAddr]   = useState('')
-  const [a11yFilter,   setA11yFilter]   = useState<A11yFeature[]>([])
-  const [showA11y,     setShowA11y]     = useState(false)
+  const [a11yFilter,   setA11yFilter]   = useState<A11yFeature[]>(() => initialA11yFilter ?? [])
+  const [showA11y,     setShowA11y]     = useState(() => !!initialA11yFilter?.length)
+  const [fromProfile,  setFromProfile]  = useState(() => !!initialA11yFilter?.length)
 
   useEffect(() => {
     getAllCompanies()
@@ -241,7 +244,14 @@ export default function HomePage({ user, onNavigate, onViewCompany }: HomePagePr
       .finally(() => setLoading(false))
   }, [])
 
+  // Consome o pré-preenchimento vindo de "Buscar Próximo Destino" uma única vez, no mount
+  useEffect(() => {
+    onPrefillConsumed?.()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const toggleA11y = (id: A11yFeature) => {
+    setFromProfile(false)
     setA11yFilter(prev =>
       prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]
     )
@@ -403,6 +413,11 @@ export default function HomePage({ user, onNavigate, onViewCompany }: HomePagePr
                     {a11yFilter.length}
                   </span>
                 )}
+                {fromProfile && (
+                  <span style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--c-text-3)', fontFamily: 'var(--font-mono)' }}>
+                    · do seu perfil
+                  </span>
+                )}
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ transition: 'transform 200ms ease', transform: showA11y ? 'rotate(180deg)' : 'rotate(0deg)' }}>
                   <polyline points="6 9 12 15 18 9"/>
                 </svg>
@@ -435,7 +450,7 @@ export default function HomePage({ user, onNavigate, onViewCompany }: HomePagePr
                   })}
                   {a11yFilter.length > 0 && (
                     <button
-                      onClick={() => setA11yFilter([])}
+                      onClick={() => { setA11yFilter([]); setFromProfile(false) }}
                       style={{
                         padding: '0.35rem 0.75rem', borderRadius: '9999px',
                         fontSize: '0.8125rem', fontWeight: 500,
@@ -469,7 +484,7 @@ export default function HomePage({ user, onNavigate, onViewCompany }: HomePagePr
               </p>
               {hasFilters && (
                 <button
-                  onClick={() => { setSearchName(''); setSearchCity(''); setSearchAddr(''); setA11yFilter([]) }}
+                  onClick={() => { setSearchName(''); setSearchCity(''); setSearchAddr(''); setA11yFilter([]); setFromProfile(false) }}
                   style={{ fontSize: '0.8125rem', color: 'var(--c-text-blue)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', transition: 'opacity 150ms ease' }}
                   onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.7' }}
                   onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '1' }}

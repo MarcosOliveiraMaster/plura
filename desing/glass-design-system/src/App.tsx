@@ -11,6 +11,7 @@ import CreateCompanyPage  from './pages/CreateCompanyPage'
 import MyCompaniesPage    from './pages/MyCompaniesPage'
 import CompanyProfilePage from './pages/CompanyProfilePage'
 import AuthCallbackPage   from './pages/AuthCallbackPage'
+import type { A11yFeature } from './lib/accessibilityMap'
 
 export type Page =
   | 'home' | 'login' | 'signup' | 'myarea'
@@ -40,6 +41,7 @@ export default function App() {
   const [activeCompanyId, setActiveCompanyId] = useState<string | null>(null)
   const [companyFromPage, setCompanyFromPage] = useState<Page>('home')
   const [initializing,    setInitializing]    = useState(true)
+  const [pendingA11yFilter, setPendingA11yFilter] = useState<A11yFeature[] | null>(null)
   const isAuthCallback    = useRef(false)
 
   useEffect(() => {
@@ -75,6 +77,11 @@ export default function App() {
 
   const navigate = (p: Page) => setPage(p)
 
+  const searchNextDestination = (a11yFilter: A11yFeature[]) => {
+    setPendingA11yFilter(a11yFilter)
+    setPage('home')
+  }
+
   const viewCompany = (id: string) => {
     setCompanyFromPage(page)
     setActiveCompanyId(id)
@@ -90,7 +97,13 @@ export default function App() {
 
   // Páginas públicas — acessíveis sem sessão
   if (page === 'home') return (
-    <HomePage user={user} onNavigate={navigate} onViewCompany={viewCompany} />
+    <HomePage
+      user={user}
+      onNavigate={navigate}
+      onViewCompany={viewCompany}
+      initialA11yFilter={pendingA11yFilter}
+      onPrefillConsumed={() => setPendingA11yFilter(null)}
+    />
   )
   if (page === 'signup') return <SignUpPage onNavigate={navigate} />
   if (page === 'login')  return <LoginPage  onNavigate={navigate} />
@@ -115,7 +128,12 @@ export default function App() {
   if (!user) return <HomePage user={null} onNavigate={navigate} onViewCompany={viewCompany} />
 
   if (page === 'myarea') return (
-    <MyAreaPage user={user} onNavigate={navigate} onViewCompany={viewCompany} />
+    <MyAreaPage
+      user={user}
+      onNavigate={navigate}
+      onViewCompany={viewCompany}
+      onSearchNextDestination={searchNextDestination}
+    />
   )
   if (page === 'create-company') return (
     <CreateCompanyPage user={user} onNavigate={navigate} onSaved={() => navigate('my-companies')} />
@@ -137,5 +155,12 @@ export default function App() {
     />
   )
 
-  return <MyAreaPage user={user} onNavigate={navigate} onViewCompany={viewCompany} />
+  return (
+    <MyAreaPage
+      user={user}
+      onNavigate={navigate}
+      onViewCompany={viewCompany}
+      onSearchNextDestination={searchNextDestination}
+    />
+  )
 }
